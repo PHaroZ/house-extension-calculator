@@ -1,14 +1,16 @@
 package net.pharoz.home.extension.unit
 
-data class Area (
+class Area(
     /**
      * in meter*meter
      */
-    val value : Double
-) {
+    override val value: Double
+) : QuantityWithUnit {
     operator fun plus(other: Area) = Area(this.value + other.value)
     operator fun minus(other: Area) = Area(this.value - other.value)
     operator fun times(other: Size) = Volume(this.value * other.value)
+
+    operator fun times(other: AreaDensity) = other * this
 
     operator fun times(qu: Int) = Area(this.value * qu)
     operator fun times(qu: Double) = Area(this.value * qu)
@@ -16,7 +18,5 @@ data class Area (
     operator fun div(qu: Double) = Area(this.value / qu)
 
 
-    override fun toString(): String {
-        return "${value}m2"
-    }
+    override val unitName: String = "m2"
 }
