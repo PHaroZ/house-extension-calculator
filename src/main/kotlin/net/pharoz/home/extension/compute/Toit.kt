@@ -32,25 +32,50 @@ data class Toit(
     val surfaceExt: Area = profondeurExt * largeurExt
 
     @Description("Surface sous rampants portée par une solive centrale, à l'intérieur de l'ossature")
-    val surfaceIntParSolive: Area = prop.dim.soliveEntraxe * (cellule.dimProfondeurInt / cosAngle)
+    val surfaceIntParSolive: Area = prop.dim.toitSoliveEntraxe * (cellule.dimProfondeurInt / cosAngle)
 
     @Description("Surface sous rampants portée par une solive centrale, au raz de l'ossature extérieure")
-    val surfaceExtRazParSolive: Area = prop.dim.batLargeurExt * (prop.dim.batProfondeurExt / cosAngle)
+    val surfaceExtRazParSolive: Area = prop.dim.toitSoliveEntraxe * (prop.dim.batProfondeurExt / cosAngle)
 
-    @Description
+    @Description("différence d'atitude entre le bas et le haut du toit, au raz de l'ossature extérieure")
+    val diffHauteurExt = prop.dim.batProfondeurExt * Math.tan(prop.angle.toit)
+
+    @Description("épaisseur au dessus de la lisse basse, donc à partir des solives jusqu'à la couverture")
+    val epaisseurExt =
+        prop.dim.toitSoliveSection.hauteur + prop.dim.toitLitelageSection.hauteur + prop.dim.toitChevronSection.hauteur + prop.dim.toitCouvertureHauteur
+
+    @Description("épaisseur intérieure, en dessous de la lisse basse")
+    val epaisseurInt =
+        prop.dim.toitIsolantInterieurEpaisseur + prop.dim.toitParementHauteur
+
     val parement = Parement()
     val isolantInterieur = IsolantInterieur()
     val solivage = Solivage()
     val isolantExterieur = IsolantExterieur()
     val contreventement = Contreventement()
     val litelage = Litelage()
+    val chevronnage = Chevronnage()
     val couverture = Couverture()
     val neige = Neige()
 
     val chargeurs =
-        hashSetOf(parement, isolantInterieur, solivage, isolantExterieur, contreventement, litelage, couverture, neige)
+        hashSetOf(
+            parement,
+            isolantInterieur,
+            solivage,
+            isolantExterieur,
+            contreventement,
+            litelage,
+            chevronnage,
+            couverture,
+            neige
+        )
 
     val poidsTotal: Weight = Weight(chargeurs.sumByDouble { it.poidsTotal.value })
+    @Description("poids portant sur une solive centrale, hors pignon")
+    val poidsParSolive: Weight = Weight(chargeurs.sumByDouble { it.poidsParSolive.value })
+    @Description("poids reposant sur 1 long mur, hors pignon")
+    val poidsSurLongMur: Weight = poidsParSolive * solivage.nbSoliveEntreMurs / 2
 
     inner class Parement : Chargeur {
         override val poidsTotal: Weight = surfaceInt * prop.poidsM2.parementInterieur
@@ -63,32 +88,29 @@ data class Toit(
     }
 
     inner class Solivage : Chargeur {
-        /**
-         * nombre de solives entres les murs -> ne reposant que sur la lisse haute et basse
-         */
-        val nbSoliveEntreMurs: Int = Math.ceil(prop.dim.batLargeurExt / prop.dim.soliveEntraxe).toInt() - 1
-        /**
-         * nombres total de solives, y compris celles de rive
-         */
+        @Description("nombre de solives entres les murs -> ne reposant que sur la lisse haute et basse")
+        val nbSoliveEntreMurs: Int = Math.ceil((prop.dim.batLargeurExt - prop.dim.toitSoliveSection.largeur) / prop.dim.toitSoliveEntraxe).toInt() - 1
+        @Description("nombres total de solives, y compris celles de rive")
         val nbSoliveTotal: Int = nbSoliveEntreMurs + 4
-        /**
-         * surface totale des solives au raz extérieur
-         */
-        val surfaceParSoliveExtRaz: Area = (prop.dim.batProfondeurExt / cosAngle) * prop.dim.soliveSection.largeur
-        val surfacePorteeParSolive = prop.dim.soliveEntraxe * profondeurExt
-        /**
-         * surface totale des solives au raz extérieur
-         */
-        val surfaceTotalExtRaz: Area = surfaceParSoliveExtRaz * nbSoliveTotal
-        override val poidsParSolive: Weight = profondeurExt * prop.dim.soliveSection.surface * prop.poidsM3.boisOssature
+        val surfacePorteeParSolive = prop.dim.toitSoliveEntraxe * profondeurExt
+        override val poidsParSolive: Weight = profondeurExt * prop.dim.toitSoliveSection.surface * prop.poidsM3.boisOssature
         override val poidsTotal: Weight = poidsParSolive * nbSoliveTotal
     }
 
     inner class IsolantExterieur : Chargeur {
-        override val poidsTotal: Weight =
-            (surfaceExtRaz - solivage.surfaceTotalExtRaz) * prop.dim.toitIsolantExterieurEpaisseur * prop.poidsM3.isolant
+        /**
+         * surface d'une solive au raz extérieur
+         */
+        private val surfaceSolivageParSoliveExtRaz: Area =
+            (prop.dim.batProfondeurExt / cosAngle) * prop.dim.toitSoliveSection.largeur
+        /**
+         * surface totale des solives au raz extérieur
+         */
+        private val surfaceSolivageTotalExtRaz: Area = surfaceSolivageParSoliveExtRaz * solivage.nbSoliveTotal
+        val surfaceTotal: Area = surfaceExtRaz - surfaceSolivageTotalExtRaz
+        override val poidsTotal: Weight = surfaceTotal * prop.dim.toitIsolantExterieurEpaisseur * prop.poidsM3.isolant
         override val poidsParSolive: Weight =
-            (surfaceExtRazParSolive - solivage.surfaceParSoliveExtRaz) * prop.dim.toitIsolantExterieurEpaisseur * prop.poidsM3.isolant
+            (surfaceExtRazParSolive - surfaceSolivageParSoliveExtRaz) * prop.dim.toitIsolantExterieurEpaisseur * prop.poidsM3.isolant
     }
 
     inner class Contreventement : Chargeur {
@@ -104,10 +126,10 @@ data class Toit(
     }
 
     inner class Chevronnage : Chargeur {
-        val surface = prop.dim.chevronSection.surface
-        val nbChevron: Int = Math.ceil(profondeurExt / prop.dim.chevronEntraxeMax).toInt() + 1
+        private val surface = prop.dim.toitChevronSection.surface
+        val nbChevron: Int = Math.ceil(profondeurExt / prop.dim.toitShevronEntraxeMax).toInt() + 1
         val entraxe = profondeurExt / (nbChevron - 1)
-        override val poidsParSolive: Weight = prop.dim.soliveEntraxe * surface * prop.poidsM3.boisOssature * nbChevron
+        override val poidsParSolive: Weight = prop.dim.toitSoliveEntraxe * surface * prop.poidsM3.boisOssature * nbChevron
         override val poidsTotal: Weight = largeurExt * surface * prop.poidsM3.boisOssature
     }
 
@@ -129,9 +151,8 @@ data class Toit(
     }
 
     interface Chargeur : PropertyHolder {
-        @Description
         val poidsTotal: Weight
-        @Description("poids portant sur une solive centrale, hors pinnon")
         val poidsParSolive: Weight
     }
 }
+

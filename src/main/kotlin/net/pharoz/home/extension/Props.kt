@@ -1,5 +1,6 @@
 package net.pharoz.home.extension
 
+import net.pharoz.home.extension.compute.Dalle
 import net.pharoz.home.extension.unit.AreaDensity
 import net.pharoz.home.extension.unit.Density
 import net.pharoz.home.extension.unit.Size
@@ -48,7 +49,7 @@ data class PropPoidsM2(
     /**
      * parquet chêne 23mm avec lambourdes
      */
-    val sol: AreaDensity = AreaDensity(21.0),
+    val parementSol: AreaDensity = AreaDensity(21.0),
 
     /**
      * BA13
@@ -58,11 +59,15 @@ data class PropPoidsM2(
     /**
      * bacacier
      */
-    val couverture:AreaDensity= AreaDensity(8.0)
+    val couverture: AreaDensity = AreaDensity(8.0),
+
+    val bardage: AreaDensity = AreaDensity(20.0),
+
+val chargeExploitation: AreaDensity = AreaDensity(150.0)
 )
 
 data class PropAngle(
-    val toit: Double = Math.toRadians(10.0)
+    val toit: Double = Math.toRadians(5.8) // 10%
 )
 
 /**
@@ -82,12 +87,31 @@ data class PropDim(
     /**
      * épaisseur ossature + OSB
      */
-    val epaisseurOssature: Size = Size.mm(222),
+    val epaisseurOssature: Size = Size.mm(212),
 
-    val soliveEntraxe: Size = Size.mm(600),
-    val chevronEntraxeMax: Size = Size.mm(120),
-    val chevronSection: Section = Section(Size.mm(70), Size.mm(50)),
-    val soliveSection: Section = Section(Size.mm(75), Size.mm(225)),
+    val dalleSoliveEntraxe: Size = Size.mm(600),
+    val dalleLongrineSection: Section = Section(Size.mm(75), Size.mm(250)),
+    val dalleSoliveSection: Section = Section(Size.mm(60), Size.mm(225)),
+    val dalleIsolantExterieurEpaisseur: Size = Size.mm(200),
+
+    val murOssatureSection: Section = Section(Size.mm(50), Size.mm(200)),
+    val murOssatureEntraxe: Size = Size.mm(600),
+    val murIsolantInterieurEpaisseur: Size = Size.mm(40),
+    val murIsolantExterieurEpaisseur: Size = Size.mm(200),
+    val murLitelageSection: Section = Section(Size.mm(40), Size.mm(14)),
+    val murContreLitelageSection: Section = Section(Size.mm(40), Size.mm(27)),
+
+    val hauteurIntMin: Size = Size(2.45),
+
+    val toitShevronEntraxeMax: Size = Size.mm(1200),
+    val toitChevronSection: Section = Section(Size.mm(70), Size.mm(50)),
+    val toitCouvertureHauteur: Size = Size.mm(50),
+    /**
+     * épaisseur BA13 + fourrure
+     */
+    val toitParementHauteur: Size = Size.mm(35),
+    val toitSoliveEntraxe: Size = Size.mm(600),
+    val toitSoliveSection: Section = Section(Size.mm(60), Size.mm(225)),
     val toitLitelageSection: Section = Section(Size.mm(40), Size.mm(27)),
     val toitDebord: Size = Size.mm(400),
     val toitIsolantInterieurEpaisseur: Size = Size.mm(100),

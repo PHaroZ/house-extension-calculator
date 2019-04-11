@@ -17,4 +17,13 @@ data class Cellule(
      * profondeur à l'intérieur de l'ossature
      */
     val dimProfondeurInt = prop.dim.batProfondeurExt - prop.dim.epaisseurOssature
+
+    val toit = Toit(prop, this)
+    val dalle = Dalle(prop, this)
+    val longMur = LongMur(prop, this)
+
+    val poidsTotal = dalle.poidsTotal + longMur.poidsTotal + ((longMur.poidsTotal * 1.2) * 2) + toit.poidsTotal
+    val poidsSurLongrineNord = dalle.poidsSurLongMur
+    val poidsSurLongrineSud = dalle.poidsSurLongMur + longMur.poidsTotal + toit.poidsSurLongMur
+    val poidsSurLongrinePignon = (dalle.poidsParSolive / 2) + (longMur.poidsTotal * 1.2) + (toit.poidsParSolive * 1.5)
 }
