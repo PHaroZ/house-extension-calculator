@@ -127,7 +127,7 @@ data class Toit(
 
     inner class Chevronnage : Chargeur {
         private val surface = prop.dim.toitChevronSection.surface
-        val nbChevron: Int = Math.ceil(profondeurExt / prop.dim.toitShevronEntraxeMax).toInt() + 1
+        val nbChevron: Int = Math.ceil(profondeurExt / prop.dim.toitChevronEntraxeMax).toInt() + 1
         val entraxe = profondeurExt / (nbChevron - 1)
         override val poidsParSolive: Weight = prop.dim.toitSoliveEntraxe * surface * prop.poidsM3.boisOssature * nbChevron
         override val poidsTotal: Weight = largeurExt * surface * prop.poidsM3.boisOssature

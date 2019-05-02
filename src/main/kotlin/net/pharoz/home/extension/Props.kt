@@ -61,7 +61,7 @@ data class PropPoidsM2(
      */
     val couverture: AreaDensity = AreaDensity(8.0),
 
-    val bardage: AreaDensity = AreaDensity(20.0),
+    val bardage: AreaDensity = AreaDensity(13.0),
 
 val chargeExploitation: AreaDensity = AreaDensity(150.0)
 )
@@ -82,16 +82,17 @@ data class PropDim(
     /**
      * au raz de l'ossature, hors bardage
      */
-    val batProfondeurExt: Size = Size(4.5),
+    val batProfondeurExt: Size = Size(4.25),
 
     /**
      * épaisseur ossature + OSB
      */
     val epaisseurOssature: Size = Size.mm(212),
 
+    
     val dalleSoliveEntraxe: Size = Size.mm(600),
-    val dalleLongrineSection: Section = Section(Size.mm(75), Size.mm(250)),
-    val dalleSoliveSection: Section = Section(Size.mm(60), Size.mm(225)),
+    val dalleLongrineSection: Section = Section(Size.mm(10), Size.mm(275)),
+    val dalleSoliveSection: Section = Section(Size.mm(63), Size.mm(250)),
     val dalleIsolantExterieurEpaisseur: Size = Size.mm(200),
 
     val murOssatureSection: Section = Section(Size.mm(50), Size.mm(200)),
@@ -103,7 +104,7 @@ data class PropDim(
 
     val hauteurIntMin: Size = Size(2.45),
 
-    val toitShevronEntraxeMax: Size = Size.mm(1200),
+    val toitChevronEntraxeMax: Size = Size.mm(1200),
     val toitChevronSection: Section = Section(Size.mm(70), Size.mm(50)),
     val toitCouvertureHauteur: Size = Size.mm(50),
     /**
@@ -111,9 +112,10 @@ data class PropDim(
      */
     val toitParementHauteur: Size = Size.mm(35),
     val toitSoliveEntraxe: Size = Size.mm(600),
-    val toitSoliveSection: Section = Section(Size.mm(60), Size.mm(225)),
+    val toitPoutreNordSection: Section = Section(Size.mm(65), Size.mm(250)),
+    val toitSoliveSection: Section = Section(Size.mm(50), Size.mm(250)),
     val toitLitelageSection: Section = Section(Size.mm(40), Size.mm(27)),
     val toitDebord: Size = Size.mm(400),
     val toitIsolantInterieurEpaisseur: Size = Size.mm(100),
-    val toitIsolantExterieurEpaisseur: Size = Size.mm(200)
+    val toitIsolantExterieurEpaisseur: Size = Size.mm(240)
 )

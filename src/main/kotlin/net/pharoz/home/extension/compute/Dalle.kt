@@ -10,10 +10,10 @@ data class Dalle(
     private val prop: Prop,
     private val cellule: Cellule
 ) : PropertyHolder {
-    @Description("Surface sous rampants, à l'intérieur de l'ossature")
+    @Description("Surface à l'intérieur de l'ossature")
     val surfaceInt: Area = cellule.dimLargeurInt * cellule.dimProfondeurInt
 
-    @Description("Surface sous rampants portée par une solive centrale, à l'intérieur de l'ossature")
+    @Description("Surface portée par une solive centrale, à l'intérieur de l'ossature")
     val surfaceIntParSolive: Area = prop.dim.dalleSoliveEntraxe * cellule.dimProfondeurInt
 
     val solivage = Solivage()
@@ -36,15 +36,17 @@ data class Dalle(
     val poidsTotal: Weight = Weight(chargeurs.sumByDouble { it.poidsTotal.value })
     @Description("poids portant sur une solive centrale, hors pignon")
     val poidsParSolive: Weight = Weight(chargeurs.sumByDouble { it.poidsParSolive.value })
-    @Description("poids reposant sur 1 long mur, hors pignon")
+    @Description("poids reposant sur 1 longrine de long mur, hors pignon")
     val poidsSurLongMur: Weight = poidsParSolive * solivage.nbSoliveEntreMurs / 2
+    @Description("poids reposant sur 1 longrine de pignon")
+    val poidsSurPignon: Weight =
+        (poidsParSolive / 2) + prop.dim.dalleLongrineSection.surface * prop.dim.batProfondeurExt * prop.poidsM3.boisOssature
 
     inner class Solivage : Chargeur {
         val profondeurSolive: Size = prop.dim.batProfondeurExt - prop.dim.dalleLongrineSection.largeur
         @Description("nombre de solives entres les murs -> ne reposant que sur les longrines")
         val nbSoliveEntreMurs: Int =
             Math.ceil((prop.dim.batLargeurExt - prop.dim.dalleLongrineSection.largeur) / prop.dim.dalleSoliveEntraxe).toInt() - 1
-        val surfacePorteeParSolive = prop.dim.dalleSoliveEntraxe * profondeurSolive
         override val poidsParSolive: Weight =
             profondeurSolive * prop.dim.dalleSoliveSection.surface * prop.poidsM3.boisOssature
         val poidsTotalSolive: Weight = poidsParSolive * nbSoliveEntreMurs
@@ -69,7 +71,8 @@ data class Dalle(
 
     inner class Plancher : Chargeur {
         override val poidsTotal: Weight = prop.dim.batProfondeurExt * prop.dim.batLargeurExt * prop.poidsM2.osbPlancher
-        override val poidsParSolive: Weight = solivage.surfacePorteeParSolive * prop.poidsM2.osbPlancher
+        override val poidsParSolive: Weight =
+            prop.dim.dalleSoliveEntraxe * solivage.profondeurSolive * prop.poidsM2.osbPlancher
 
     }
 
@@ -87,8 +90,8 @@ data class Dalle(
 
     inner class ChargeExploitation : Chargeur {
         override val poidsTotal: Weight =
-            prop.dim.batProfondeurExt * prop.dim.batLargeurExt * prop.poidsM2.chargeExploitation
-        override val poidsParSolive: Weight = solivage.surfacePorteeParSolive * prop.poidsM2.chargeExploitation
+            cellule.dimProfondeurInt * cellule.dimLargeurInt * prop.poidsM2.chargeExploitation
+        override val poidsParSolive: Weight = surfaceIntParSolive * prop.poidsM2.chargeExploitation
     }
 
     interface Chargeur : PropertyHolder {
